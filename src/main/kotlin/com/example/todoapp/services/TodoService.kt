@@ -13,6 +13,8 @@ class TodoService(private val todoRepository: TodoRepository) {
     
     fun getTodoById(id: UUID): TodoEntity? = todoRepository.findById(id).orElse(null)
     
+    fun getTodosByCompleted(completed: Boolean): List<TodoEntity> = todoRepository.findByCompleted(completed)
+    
     fun createTodo(todoEntity: TodoEntity): Result<TodoEntity> {
         if (todoEntity.title.isBlank()) {
             return Result.failure(IllegalArgumentException("Title cannot be blank"))

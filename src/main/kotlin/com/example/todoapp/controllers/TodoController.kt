@@ -21,17 +21,23 @@ class TodoController(private val todoService: TodoService) {
     fun status() = ResponseEntity.ok().body("OK")
 
     @GetMapping("/")
-    fun getAllTodos(@RequestParam("id") id: String?): ResponseEntity<List<TodoEntity>> {
-        return if (id == null) {
-            ResponseEntity.ok(todoService.getAllTodos())
-        } else {
-            val uuid = try {
-                UUID.fromString(id)
-            } catch (e: IllegalArgumentException) {
-                return ResponseEntity.badRequest().build()
+    fun getAllTodos(@RequestParam("id") id: String?, @RequestParam("completed", required = false) completed: Boolean?): ResponseEntity<List<TodoEntity>> {
+        return when {
+            id != null -> {
+                val uuid = try {
+                    UUID.fromString(id)
+                } catch (e: IllegalArgumentException) {
+                    return ResponseEntity.badRequest().build()
+                }
+                val todo = todoService.getTodoById(uuid)
+                ResponseEntity.ok(todo?.let { listOf(it) } ?: emptyList())
             }
-            val todo = todoService.getTodoById(uuid)
-            ResponseEntity.ok(todo?.let { listOf(it) } ?: emptyList())
+            completed != null -> {
+                ResponseEntity.ok(todoService.getTodosByCompleted(completed))
+            }
+            else -> {
+                ResponseEntity.ok(todoService.getAllTodos())
+            }
         }
     }
 
